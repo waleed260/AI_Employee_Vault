@@ -1,0 +1,17 @@
+{
+  "name": "ai-employee",
+  "version": "0.1.0",
+  "description": "Personal AI Employee - Digital FTE using Claude Code and Obsidian",
+  "main": "src/orchestrator.py",
+  "scripts": {
+    "start": "python src/orchestrator.py",
+    "gmail-watcher": "python src/watchers/gmail_watcher.py",
+    "file-watcher": "python src/watchers/filesystem_watcher.py",
+    "install-deps": "pip install google-api-python-client google-auth watchdog"
+  },
+  "dependencies": {
+    "google-api-python-client": "^2.100.0",
+    "google-auth": "^2.25.0",
+    "watchdog": "^3.0.0"
+  }
+}

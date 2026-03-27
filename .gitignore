@@ -1,0 +1,108 @@
+# =============================================================================
+# HARMFUL FILES - DO NOT PUSH TO GITHUB
+# =============================================================================
+
+# -------------------------
+# CREDENTIALS & SECRETS
+# -------------------------
+credentials.json
+client_secrets.json
+gmail_token.json
+oauth*.json
+*.pem
+*.key
+.env
+.env.*
+secrets.json
+token.json
+*.token
+*_token.json
+
+# API Keys
+api_key*
+apikey*
+*_key
+GMAIL_*
+WHATSAPP_*
+BANK_*
+
+# -------------------------
+# PYTHON
+# -------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# -------------------------
+# VIRTUAL ENVIRONMENT
+# -------------------------
+venv/
+.venv/
+env/
+.env/
+
+# -------------------------
+# IDE
+# -------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# -------------------------
+# OS
+# -------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# -------------------------
+# LOGS
+# -------------------------
+*.log
+logs/
+
+# -------------------------
+# VAULT DATA (Personal Info)
+# -------------------------
+vault_data/
+vault/
+*.vault/
+Inbox/
+Needs_Action/
+Done/
+Logs/
+Logs.md
+
+# -------------------------
+# TEMPORARY
+# -------------------------
+*.tmp
+*.temp
+.cache/
+
+# -------------------------
+# DATABASE
+# -------------------------
+*.db
+*.sqlite
+*.sqlite3
+
+# -------------------------
+# NODE (if used)
+# -------------------------
+node_modules/
+
+# -------------------------
+# UV
+# -------------------------
+.ruff_cache/
+uv.lock

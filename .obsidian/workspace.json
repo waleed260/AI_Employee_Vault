@@ -1,0 +1,229 @@
+{
+  "main": {
+    "id": "9580b402432a9926",
+    "type": "split",
+    "children": [
+      {
+        "id": "d1e8375f6700fc8f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b03584afa8d5710c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Vault_Structure.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Vault_Structure"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "4d801e0bb0b5cac7",
+    "type": "split",
+    "children": [
+      {
+        "id": "46bade66ae73e017",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b9b6f34f817a464c",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "43188197568b33ab",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "a71cd4dd4dae633a",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "4ea0a3cbf417730d",
+    "type": "split",
+    "children": [
+      {
+        "id": "c3c8622f411b7370",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "bffd68908239fe29",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Vault_Structure.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Vault_Structure"
+            }
+          },
+          {
+            "id": "3b8c84cb22191f7a",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Vault_Structure.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Vault_Structure"
+            }
+          },
+          {
+            "id": "24fad752032b2add",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "a459493ec978fd02",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "cf8de442fd0414f7",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Vault_Structure.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Vault_Structure"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "b03584afa8d5710c",
+  "lastOpenFiles": [
+    "Untitled.canvas",
+    "vault_data/Inbox/EMAIL_19d2b3a38a8967c0_Security alert.md",
+    "vault_data/Inbox/EMAIL_19d2b974d1717e1f_Eeeeee.md",
+    "vault_data/Needs_Action/EMAIL_19d2b974d1717e1f_Eeeeee.md",
+    "vault_data/Rejected/EMAIL_19d2b974d1717e1f_Eeeeee.md",
+    "vault_data/Done/TEST_MANUAL.email.md",
+    "vault_data/Inbox/TEST_MANUAL.email.md",
+    "vault_data/Needs_Action/EMAIL_19d2b3a38a8967c0_Security alert.md",
+    "vault_data/Pending_Approval/EMAIL_19d2b3a38a8967c0_Security alert.md",
+    "vault_data/Inbox/EMAIL_19d2b8b10596a457_What are you doing.md",
+    "vault_data/Pending_Approval/EMAIL_19d2b8b10596a457_What are you doing.md",
+    "vault_data/Plans/EMAIL_19d2b8b10596a457_What are you doing.md",
+    "vault_data/Done/HOOK_test.md",
+    "vault_data/Inbox/HOOK_test.md",
+    "src/watchers/__pycache__/vault_watcher.cpython-312.pyc",
+    "src/watchers/vault_watcher.py",
+    "vault_data/Done/TEST_email.md",
+    "vault_data/Inbox/TEST_email.md",
+    "src/watchers/__pycache__/inbox_watcher.cpython-312.pyc",
+    "src/watchers/inbox_watcher.py",
+    "vault_data/Inbox/EMAIL_19d3040d2b14a50b_Ksa ha.md",
+    "vault_data/Done/EMAIL_19d3040d2b14a50b_Ksa ha.md",
+    "Untitled 1.canvas",
+    "Untitled 2.canvas",
+    "Untitled 3.canvas",
+    "Untitled 4.canvas",
+    "Vault_Structure.md",
+    "CLAUDE.md",
+    "Business_Goals.md",
+    "2026-03-28.md",
+    "skills/generate-briefing/SKILL.md",
+    "Untitled",
+    "setup_integrations.py",
+    "src/silver_tier/__pycache__/whatsapp_service.cpython-312.pyc",
+    "src/silver_tier/whatsapp_service.py",
+    "vault_data/WhatsApp/config.json",
+    "vault_data/LinkedIn/config.json",
+    "vault_data/Plans/PLAN_task_20260328004159_20260328.md",
+    "vault_data/Plans/PLAN_task_20260328003148_20260328.md",
+    "skills/team-collaboration/SKILL.md"
+  ]
+}
