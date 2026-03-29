@@ -1,14 +1,18 @@
+#!/usr/bin/env python3
+"""
+Fixed MCP Server for AI Employee Vault
+"""
+
 import json
 import logging
-import asyncio
-import uuid
+import socketserver
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Callable
 from datetime import datetime
 from enum import Enum
+import threading
 import http.server
 import socketserver
-import threading
 
 logger = logging.getLogger("MCPServer")
 
@@ -231,8 +235,10 @@ class MCPServer:
     def register_prompt(self, name: str, template: str):
         self.prompts[name] = template
 
+    # Tool implementations
     def _tool_send_email(self, **kwargs) -> Dict:
         logger.info(f"Sending email to: {kwargs.get('to')}")
+        # For now, just simulate sending - in production would use actual SMTP
         return {
             "status": "success",
             "message": f"Email sent to {kwargs.get('to')}",
@@ -503,7 +509,7 @@ priority: {kwargs.get("priority", "medium")}
 
     def handle_message(self, message: Dict) -> Dict:
         msg_type = message.get("type")
-        msg_id = message.get("id", str(uuid.uuid4()))
+        msg_id = message.get("id", str(datetime.now().timestamp()))
 
         self.request_history.append(
             {
@@ -595,10 +601,51 @@ priority: {kwargs.get("priority", "medium")}
         if self.server:
             return {"status": "error", "message": "Server already running"}
 
-        handler = lambda *args, **kwargs: MCPHttpServer(
-            mcp_server=self, *args, **kwargs
-        )
-        self.server = socketserver.TCPServer(("", self.port), handler)
+        class MCPHandler(http.server.BaseHTTPRequestHandler):
+            def do_POST(self):
+                content_length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(content_length)
+
+                try:
+                    message = json.loads(body.decode())
+                    response = self.server.mcp_server.handle_message(message)
+
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(json.dumps(response).encode())
+                except Exception as e:
+                    self.send_response(500)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"error": str(e)}).encode())
+
+            def do_GET(self):
+                if self.path == "/tools":
+                    tools = self.server.mcp_server.get_tools_list()
+                    response = {"tools": tools}
+                elif self.path == "/resources":
+                    resources = self.server.mcp_server.get_resources_list()
+                    response = {"resources": resources}
+                elif self.path == "/prompts":
+                    prompts = self.server.mcp_server.get_prompts_list()
+                    response = {"prompts": prompts}
+                elif self.path == "/status":
+                    response = self.server.mcp_server.get_status()
+                else:
+                    response = {"status": "ok", "message": "MCP Server running"}
+
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps(response).encode())
+
+            def log_message(self, format, *args):
+                logger.info(f"{self.address_string()} - {format % args}")
+
+        self.server = socketserver.TCPServer(("", self.port), MCPHandler)
+        self.server.mcp_server = self  # Attach MCP server instance to HTTP server
+
         self.thread = threading.Thread(target=self.server.serve_forever)
         self.thread.daemon = True
         self.thread.start()
@@ -632,48 +679,30 @@ priority: {kwargs.get("priority", "medium")}
         }
 
 
-class MCPHttpServer(http.server.BaseHTTPRequestHandler):
-    def __init__(self, mcp_server, *args, **kwargs):
-        self.mcp_server = mcp_server
-        super().__init__(*args, **kwargs)
+def main():
+    import argparse
 
-    def do_POST(self):
-        content_length = int(self.headers.get("Content-Length", 0))
-        body = self.rfile.read(content_length)
+    parser = argparse.ArgumentParser(description="MCP Server for AI Employee")
+    parser.add_argument("--vault", required=True, help="Path to vault")
+    parser.add_argument("--port", type=int, default=8080, help="Port to run on")
+    args = parser.parse_args()
 
-        try:
-            message = json.loads(body.decode())
-            response = self.mcp_server.handle_message(message)
+    server = MCPServer(args.vault, args.port)
+    print(f"Starting MCP Server on port {args.port}")
+    print(f"Vault path: {args.vault}")
 
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(json.dumps(response).encode())
-        except Exception as e:
-            self.send_response(500)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(json.dumps({"error": str(e)}).encode())
+    result = server.start()
+    print(f"Server start result: {result}")
 
-    def do_GET(self):
-        if self.path == "/tools":
-            tools = self.mcp_server.get_tools_list()
-            response = {"tools": tools}
-        elif self.path == "/resources":
-            resources = self.mcp_server.get_resources_list()
-            response = {"resources": resources}
-        elif self.path == "/prompts":
-            prompts = self.mcp_server.get_prompts_list()
-            response = {"prompts": prompts}
-        elif self.path == "/status":
-            response = self.mcp_server.get_status()
-        else:
-            response = {"status": "ok", "message": "MCP Server running"}
+    try:
+        while True:
+            import time
 
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.end_headers()
-        self.wfile.write(json.dumps(response).encode())
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nShutting down MCP Server...")
+        server.stop()
 
-    def log_message(self, format, *args):
-        logger.info(f"{self.address_string()} - {format % args}")
+
+if __name__ == "__main__":
+    main()
