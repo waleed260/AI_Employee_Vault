@@ -58,6 +58,17 @@ class MCPServer:
         )
 
         self.register_tool(
+            "linkedin_post",
+            self._tool_linkedin_post,
+            {
+                "description": "Create LinkedIn post via web interface (requires manual login)",
+                "parameters": {
+                    "content": "string",
+                },
+            },
+        )
+
+        self.register_tool(
             "create_file",
             self._tool_create_file,
             {
@@ -243,6 +254,122 @@ class MCPServer:
             "status": "success",
             "message": f"Email sent to {kwargs.get('to')}",
             "subject": kwargs.get("subject"),
+        }
+
+    def _tool_linkedin_post(self, **kwargs) -> Dict:
+        content = kwargs.get("content")
+        if not content:
+            return {
+                "status": "error",
+                "message": "Content is required for LinkedIn post",
+            }
+
+        logger.info(f"Creating LinkedIn post via Playwright: {content[:50]}...")
+
+        try:
+            from playwright.sync_api import sync_playwright
+            import os
+            import time
+
+            with sync_playwright() as p:
+                # Launch browser
+                browser = p.chromium.launch(
+                    headless=False
+                )  # Set to True for production
+                page = browser.new_page()
+
+                # Navigate to LinkedIn
+                page.goto("https://www.linkedin.com/login")
+
+                # Check if we need to login (simplified - in production would handle auth properly)
+                # For now, we'll assume user is already logged in or will login manually
+                # In a real implementation, you would:
+                # 1. Check for existing session cookies
+                # 2. If not present, wait for user to login manually
+                # 3. Then proceed with posting
+
+                # Wait for user to login manually (simplified approach)
+                logger.info("Please log in to LinkedIn in the browser window...")
+                try:
+                    # Wait for feed to appear (indicates login success)
+                    page.wait_for_selector(
+                        "div[data-id='feed-ember']", timeout=120000
+                    )  # 2 minute timeout
+                    logger.info("Logged in successfully!")
+                except Exception as e:
+                    logger.warning(f"Login wait timed out or failed: {e}")
+                    # Continue anyway - user might be logged in
+
+                # Navigate to post creation
+                page.click("button:global:has-text('Start a post')")
+
+                # Wait for the post editor to appear
+                page.wait_for_selector("div[role='textbox']", timeout=10000)
+
+                # Fill in the post content
+                page.fill("div[role='textbox']", content)
+
+                # Click the post button
+                page.click("button:global:has-text('Post')")
+
+                # Wait for post to be published
+                page.wait_for_timeout(3000)  # Wait 3 seconds for post to go through
+
+                # Get the current URL as post reference
+                post_url = page.url
+
+                browser.close()
+
+                # Log the action
+                self._tool_log_action(
+                    action_type="linkedin_post",
+                    details=f"Posted content via Playwright: {content[:100]}...",
+                )
+
+                return {
+                    "status": "success",
+                    "message": "LinkedIn post created successfully via Playwright",
+                    "post_url": post_url,
+                    "content": content,
+                }
+
+        except ImportError:
+            logger.error("Playwright not available. Install with: uv add playwright")
+            return {
+                "status": "error",
+                "message": "Playwright not installed. Please install playwright package.",
+            }
+        except Exception as e:
+            logger.error(f"Error creating LinkedIn post with Playwright: {e}")
+            return {
+                "status": "error",
+                "message": f"Failed to create LinkedIn post: {str(e)}",
+            }
+
+        logger.info(f"Creating LinkedIn post: {content[:50]}...")
+
+        # For now, simulate the post - in production would use Playwright
+        # To implement with Playwright:
+        # 1. Launch browser
+        # 2. Navigate to LinkedIn login
+        # 3. Wait for manual login (or use saved session)
+        # 4. Navigate to post creation
+        # 5. Fill in content and submit
+        # 6. Return post URL
+
+        # Simulate successful post
+        post_url = f"https://linkedin.com/feed/update/{int(datetime.now().timestamp())}"
+
+        # Log the action
+        self._tool_log_action(
+            action_type="linkedin_post", details=f"Posted content: {content[:100]}..."
+        )
+
+        return {
+            "status": "success",
+            "message": "LinkedIn post created successfully",
+            "post_url": post_url,
+            "content": content,
         }
 
     def _tool_create_file(self, **kwargs) -> Dict:

@@ -1,6 +1,7 @@
 import os
-import pickle
+import json
 from pathlib import Path
+from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -15,8 +16,9 @@ class GmailService:
     def authenticate(self):
         creds = None
         if self.token_path.exists():
-            with open(self.token_path, "rb") as token:
-                creds = pickle.load(token)
+            creds = Credentials.from_authorized_user_file(
+                str(self.token_path), ["https://www.googleapis.com/auth/gmail.readonly"]
+            )
 
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
@@ -28,8 +30,9 @@ class GmailService:
                 )
                 creds = flow.run_local_server(port=0)
 
-            with open(self.token_path, "wb") as token:
-                pickle.dump(creds, token)
+            # Save the credentials for the next run
+            with open(self.token_path, "w") as token:
+                token.write(creds.to_json())
 
         self.service = build("gmail", "v1", credentials=creds)
 

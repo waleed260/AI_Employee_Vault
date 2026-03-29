@@ -185,6 +185,7 @@
   },
   "active": "b03584afa8d5710c",
   "lastOpenFiles": [
+    "src/silver_tier/__pycache__/mcp_server_fixed.cpython-312.pyc",
     "SILVER_TIER_GAP_ANALYSIS.md",
     "BRONZE_TIER_ASSESSMENT.md",
     "SILVER_TIER_STATUS.md",
@@ -221,7 +222,6 @@
     "vault_data/Inbox/HOOK_test.md",
     "vault_data/Done/TEST_email.md",
     "vault_data/Inbox/TEST_email.md",
-    "vault_data/Inbox/EMAIL_19d3040d2b14a50b_Ksa ha.md",
     "Untitled 1.canvas",
     "Untitled 2.canvas",
     "Untitled 3.canvas",
