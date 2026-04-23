@@ -88,37 +88,5 @@ Export analytics to CSV
 - Completion rate
 - Average completion time
 
-### Workflow Metrics
-- Items per folder
-- Approval turnaround
-- Rejection rate
-- Processing time
-
-### Business Metrics
-- Leads generated
-- Actions taken
-- Revenue items
-- Expense items
-- ## Report Location
-
-Reports are saved to:
-- `/Briefings/YYYY-MM-DD_Briefing.md`
-- `/Analytics/reports.json`
-
-## Dashboard
-
-The Dashboard shows:
-- Current status
-- All folders summary
-- Recent emails
-- Needs Action items
-- Pending approvals
-- System health
-
-## Success Criteria
-- All metrics collected accurately
-- Reports generated on schedule
-- Dashboard updated
-- Insights actionable
 
 
