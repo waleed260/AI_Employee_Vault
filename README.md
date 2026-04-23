@@ -232,3 +232,36 @@ nohup python src/gold_tier/mcp_server_social.py --vault ./vault_data --port 8081
 
 
 
+## Security
+
+- **Local data** - Everything stays on your machine
+- **Human approval** - You control sensitive actions (contracts >$5K, pricing changes, etc.)
+- **Audit logs** - Every action recorded in `/Logs/` with enhanced multi-level logging
+- **No secrets in git** - Uses `.gitignore` for config files
+- **Graceful degradation** - If one service fails (e.g., LinkedIn API), others continue
+
+## Files Created by AI
+
+| Folder | What Goes Here |
+|--------|----------------|
+| `Inbox` | New emails, messages |
+| `Needs_Action` | Items you need to handle |
+| `Pending_Approval` | Waiting for your OK |
+| `Done` | Completed items |
+| `Plans` | AI-generated action plans |
+| `Briefings` | Weekly/monthly reports |
+| `Accounting` | Financial records (invoices, expenses) |
+| `Logs` | Audit logs (daily, error, performance, security) |
+## Need Help?
+
+- Check `vault_data/Dashboard.md` for current status
+- Read `CLAUDE.md` for technical details
+- Review `skills/` folder for all AI capabilities
+- See `GOLD_TIER_IMPLEMENTATION_SUMMARY.md` for deep technical details
+
+## License
+
+MIT
+
+---
+*Build your Autonomous Employee today!*
