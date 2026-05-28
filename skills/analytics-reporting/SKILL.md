@@ -87,7 +87,6 @@ Export analytics to CSV
 - Completed tasks
 - Completion rate
 - Average completion time
-
 ### Workflow Metrics
 - Items per folder
 - Approval turnaround
@@ -99,8 +98,7 @@ Export analytics to CSV
 - Actions taken
 - Revenue items
 - Expense items
-
-## Report Location
+- ## Report Location
 
 Reports are saved to:
 - `/Briefings/YYYY-MM-DD_Briefing.md`
@@ -121,3 +119,6 @@ The Dashboard shows:
 - Reports generated on schedule
 - Dashboard updated
 - Insights actionable
+
+
+

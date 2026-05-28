@@ -509,6 +509,8 @@ nohup python src/gold_tier/mcp_server_social.py --vault ./vault_data --port 8081
 
 ### Using PM2 (Node.js)
 
+## Security
+
 ```bash
 pm2 start "python src/orchestrator.py --vault ./vault_data" --name ai-employee
 pm2 start "python src/silver_tier/mcp_server_fixed.py --vault ./vault_data --port 8080" --name mcp-core
@@ -518,9 +520,22 @@ pm2 save
 
 ---
 
+| Folder | What Goes Here |
+|--------|----------------|
+| `Inbox` | New emails, messages |
+| `Needs_Action` | Items you need to handle |
+| `Pending_Approval` | Waiting for your OK |
+| `Done` | Completed items |
+| `Plans` | AI-generated action plans |
+| `Briefings` | Weekly/monthly reports |
+| `Accounting` | Financial records (invoices, expenses) |
+| `Logs` | Audit logs (daily, error, performance, security) |
+
 ## Development
 
 ### Install Development Dependencies
+
+## Need Help?
 
 ```bash
 pip install pytest black ruff
@@ -615,5 +630,4 @@ ruff check src/
 MIT
 
 ---
-
-*Build your Autonomous Employee today!* `l
+*Build your Autonomous Employee today!*

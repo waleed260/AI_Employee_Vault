@@ -1,3 +1,4 @@
+
 # SKILL.md - Generate CEO Briefing
 
 ## Purpose
