@@ -6,8 +6,16 @@ Handles Facebook, Instagram, Twitter/X posting and monitoring
 
 import json
 import logging
+import os
+import shutil
 import socketserver
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from playwright.sync_api import sync_playwright
+
 from typing import Dict, List, Optional, Any, Callable
 from datetime import datetime
 from enum import Enum
@@ -188,6 +196,39 @@ class MCPServerSocial:
             "get_social_status",
             self._tool_get_social_status,
             {"description": "Get social media services status", "parameters": {}},
+        )
+
+        self.register_tool(
+            "twitter_playwright_post",
+            self._tool_twitter_playwright_post,
+            {
+                "description": "Create a Twitter/X post via browser (requires manual login)",
+                "parameters": {
+                    "content": "string",
+                },
+            },
+        )
+
+        self.register_tool(
+            "facebook_playwright_post",
+            self._tool_facebook_playwright_post,
+            {
+                "description": "Create a Facebook post via browser (requires manual login)",
+                "parameters": {
+                    "content": "string",
+                },
+            },
+        )
+
+        self.register_tool(
+            "instagram_playwright_post",
+            self._tool_instagram_playwright_post,
+            {
+                "description": "Create an Instagram post via browser (requires manual login)",
+                "parameters": {
+                    "content": "string",
+                },
+            },
         )
 
         logger.info(f"Registered {len(self.tools)} social media MCP tools")
@@ -475,6 +516,146 @@ class MCPServerSocial:
         except Exception as e:
             logger.error(f"Error in get_social_status: {e}")
             return {"status": "error", "message": str(e)}
+
+    # Tool implementations - Playwright browser-based posting via Firefox cookies
+    def _tool_twitter_playwright_post(self, **kwargs) -> Dict:
+        content = kwargs.get("content")
+        if not content:
+            return {"status": "error", "message": "Content is required for Twitter/X post"}
+
+        logger.info(f"Creating Twitter/X post via Firefox cookies: {content[:50]}...")
+
+        try:
+            from src.shared.firefox_cookies import create_authenticated_context, close_context
+
+            context = create_authenticated_context(platform="twitter", headless=True)
+            page = context.new_page()
+
+            page.goto("https://x.com/home", timeout=30000, wait_until="networkidle")
+            page.wait_for_timeout(3000)
+
+            if "home" not in page.url and "i/flow" in page.url:
+                close_context(context)
+                return {"status": "error", "message": "Not logged in to Twitter/X. Log in via Firefox first."}
+
+            page.goto("https://x.com/compose/post", timeout=30000, wait_until="networkidle")
+            page.wait_for_timeout(3000)
+
+            textbox = page.wait_for_selector("div[data-testid='tweetTextarea_0']", timeout=10000)
+            textbox.fill(content)
+
+            post_button = page.wait_for_selector("div[data-testid='tweetButton']", timeout=5000)
+            post_button.click()
+
+            page.wait_for_timeout(3000)
+
+            close_context(context)
+
+            self._tool_log_action(
+                action_type="twitter_playwright_post",
+                details=f"Posted content via Firefox cookies: {content[:100]}...",
+            )
+
+            return {"status": "success", "message": "Twitter/X post created successfully via Firefox cookies", "content": content}
+
+        except ImportError:
+            return {"status": "error", "message": "Playwright not installed. Please install playwright package."}
+        except Exception as e:
+            logger.error(f"Error creating Twitter/X post: {e}")
+            return {"status": "error", "message": f"Failed to create Twitter/X post: {str(e)}"}
+
+    def _tool_facebook_playwright_post(self, **kwargs) -> Dict:
+        content = kwargs.get("content")
+        if not content:
+            return {"status": "error", "message": "Content is required for Facebook post"}
+
+        logger.info(f"Creating Facebook post via Firefox cookies: {content[:50]}...")
+
+        try:
+            from src.shared.firefox_cookies import create_authenticated_context, close_context
+
+            context = create_authenticated_context(platform="facebook", headless=True)
+            page = context.new_page()
+
+            page.goto("https://www.facebook.com/", timeout=30000, wait_until="networkidle")
+            page.wait_for_timeout(3000)
+
+            if "login" in page.url or "checkpoint" in page.url:
+                close_context(context)
+                return {"status": "error", "message": "Not logged in to Facebook. Log in via Firefox first."}
+
+            textbox = page.wait_for_selector("div[role='textbox']", timeout=10000)
+            textbox.fill(content)
+
+            page.wait_for_timeout(1000)
+
+            post_button = page.wait_for_selector("button:has-text('Post')", timeout=5000)
+            post_button.click()
+
+            page.wait_for_timeout(3000)
+
+            close_context(context)
+
+            self._tool_log_action(
+                action_type="facebook_playwright_post",
+                details=f"Posted content via Firefox cookies: {content[:100]}...",
+            )
+
+            return {"status": "success", "message": "Facebook post created successfully via Firefox cookies", "content": content}
+
+        except ImportError:
+            return {"status": "error", "message": "Playwright not installed. Please install playwright package."}
+        except Exception as e:
+            logger.error(f"Error creating Facebook post: {e}")
+            return {"status": "error", "message": f"Failed to create Facebook post: {str(e)}"}
+
+    def _tool_instagram_playwright_post(self, **kwargs) -> Dict:
+        content = kwargs.get("content")
+        if not content:
+            return {"status": "error", "message": "Content is required for Instagram post"}
+
+        logger.info(f"Creating Instagram post via Firefox cookies: {content[:50]}...")
+
+        try:
+            from src.shared.firefox_cookies import create_authenticated_context, close_context
+
+            context = create_authenticated_context(platform="instagram", headless=True)
+            page = context.new_page()
+
+            page.goto("https://www.instagram.com/", timeout=30000, wait_until="networkidle")
+            page.wait_for_timeout(3000)
+
+            if "accounts/login" in page.url or "accounts/signup" in page.url:
+                close_context(context)
+                return {"status": "error", "message": "Not logged in to Instagram. Log in via Firefox first."}
+
+            create_button = page.wait_for_selector("svg[aria-label='New post']", timeout=10000)
+            create_button.click()
+            page.wait_for_timeout(2000)
+
+            try:
+                caption_area = page.wait_for_selector("textarea[aria-label='Write a caption...']", timeout=5000)
+                if caption_area:
+                    caption_area.fill(content)
+            except:
+                logger.warning("Could not find caption area - media selection dialog may be open")
+
+            page.wait_for_timeout(1000)
+
+            close_context(context)
+
+            self._tool_log_action(
+                action_type="instagram_playwright_post",
+                details=f"Posted content via Firefox cookies: {content[:100]}...",
+            )
+
+            return {"status": "success", "message": "Instagram post workflow initiated via Firefox cookies. Please complete image selection in the browser.", "content": content}
+
+        except ImportError:
+            return {"status": "error", "message": "Playwright not installed. Please install playwright package."}
+        except Exception as e:
+            logger.error(f"Error creating Instagram post: {e}")
+            return {"status": "error", "message": f"Failed to create Instagram post: {str(e)}"}
 
     # MCP Server boilerplate (same as base server)
     def handle_message(self, message: Dict) -> Dict:

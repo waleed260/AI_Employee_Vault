@@ -1,165 +1,142 @@
 #!/usr/bin/env python3
-"""
-Integration Setup Helper
-Run this to configure LinkedIn and WhatsApp integrations
-"""
+"""Setup all social platform integrations using Playwright browser automation.
+Runs once to log into each platform, then saves credentials for headless use."""
 
-import json
-import sys
+import json, os, shutil, sys, time
 from pathlib import Path
 
-VAULT_PATH = Path(__file__).parent / "vault_data"
+VAULT = Path(__file__).parent / "vault_data"
 
+INTEGRATIONS = {
+    "LinkedIn": {
+        "url": "https://www.linkedin.com/feed/",
+        "config": VAULT / "LinkedIn" / "config.json",
+        "state_file": VAULT / "LinkedIn" / "playwright_state.json",
+        "status_key": "connection_type",
+        "status_value": "playwright_browser",
+    },
+    "Twitter": {
+        "url": "https://x.com/home",
+        "config": VAULT / "Twitter" / "config.json",
+        "state_file": VAULT / "Twitter" / "playwright_state.json",
+        "status_key": "connection_type",
+        "status_value": "playwright_browser",
+    },
+    "Facebook_Instagram": {
+        "url": "https://www.facebook.com/",
+        "config": VAULT / "Facebook_Instagram" / "config.json",
+        "state_file": VAULT / "Facebook_Instagram" / "playwright_state.json",
+        "status_key": "connection_type",
+        "status_value": "playwright_browser",
+    },
+}
 
-def setup_linkedin():
-    print("\n" + "=" * 50)
-    print("LINKEDIN SETUP")
-    print("=" * 50)
-    print("""
-To get LinkedIn API access:
-1. Go to https://www.linkedin.com/developers/apps
-2. Create a new app
-3. Get your Access Token
-4. Copy it below
-""")
+def check_state(platform: str, info: dict) -> bool:
+    state_file = info["state_file"]
+    if state_file.exists():
+        data = json.loads(state_file.read_text())
+        return len(data.get("cookies", [])) > 0
+    return False
 
-    access_token = input("Enter LinkedIn Access Token: ").strip()
-    company_id = input("Enter Company ID (optional, press Enter to skip): ").strip()
-    profile_id = input("Enter Profile ID (optional, press Enter to skip): ").strip()
+def setup_platform(platform: str, info: dict):
+    """Open browser for user to log into the platform."""
+    state_file = info["state_file"]
+    url = info["url"]
 
-    config_file = VAULT_PATH / "LinkedIn" / "config.json"
+    print(f"\n{'='*60}")
+    print(f" Setting up {platform}")
+    print(f"{'='*60}")
 
-    if config_file.exists():
-        config = json.loads(config_file.read_text())
-    else:
-        config = {}
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("  ❌ Playwright not installed. Run: pip3 install playwright")
+        return False
 
-    config["access_token"] = access_token if access_token else None
-    config["company_id"] = company_id if company_id else None
-    config["profile_id"] = profile_id if profile_id else None
-    config["status"] = "configured" if access_token else "needs_setup"
+    with sync_playwright() as p:
+        try:
+            chrome_data = "/tmp/chrome-browser-data"
+            if not os.path.isdir(chrome_data):
+                def ignore_singletons(path, names):
+                    return [n for n in names if n.startswith("Singleton")]
+                shutil.copytree("/home/waleed/.config/google-chrome", chrome_data,
+                                dirs_exist_ok=True, ignore=ignore_singletons)
 
-    config_file.write_text(json.dumps(config, indent=2))
+            ctx = p.chromium.launch_persistent_context(
+                user_data_dir=chrome_data,
+                headless=False,
+                executable_path="/opt/google/chrome/chrome",
+                args=["--no-sandbox", "--disable-dev-shm-usage"],
+                ignore_default_args=["--enable-automation"],
+            )
+        except Exception as e:
+            print(f"  ❌ Could not launch Chrome: {e}")
+            return False
 
-    if access_token:
-        print("\n✓ LinkedIn configured!")
-        print(f"  Company ID: {company_id or 'Not set'}")
-        print(f"  Profile ID: {profile_id or 'Not set'}")
-    else:
-        print("\n✗ No token provided")
+        page = ctx.new_page()
+        page.goto(url, timeout=30000, wait_until="domcontentloaded")
+        print(f"  📋 A browser window should open for {url}")
+        print(f"  🔑 Log in if needed, then press Enter here...")
+        input("  ⏎ Press Enter after logging in: ")
 
+        current_url = page.url
+        logged_in = url.split("/")[2] in current_url and "login" not in current_url
 
-def setup_whatsapp():
-    print("\n" + "=" * 50)
-    print("WHATSAPP SETUP")
-    print("=" * 50)
-    print("""
-To get WhatsApp Business API:
-1. Go to https://developers.facebook.com/
-2. Create a WhatsApp Business app
-3. Get your API URL and Token
-4. Copy them below
-""")
+        if logged_in:
+            print(f"  ✅ Logged in! Saving session...")
+            ctx.storage_state(path=str(state_file))
+            print(f"  ✅ Storage state saved to {state_file}")
 
-    api_url = input("Enter WhatsApp API URL: ").strip()
-    api_token = input("Enter WhatsApp API Token: ").strip()
-    phone_id = input("Enter Phone Number ID (optional): ").strip()
+            def ignore_singletons(path, names):
+                return [n for n in names if n.startswith("Singleton")]
+            shutil.copytree("/home/waleed/.config/google-chrome", "/tmp/chrome-browser-data",
+                            dirs_exist_ok=True, ignore=ignore_singletons)
+            print(f"  ✅ Chrome profile copied to /tmp/chrome-browser-data")
 
-    config_file = VAULT_PATH / "WhatsApp" / "config.json"
+            info["config"].parent.mkdir(parents=True, exist_ok=True)
+            if info["config"].exists():
+                config = json.loads(info["config"].read_text())
+            else:
+                config = {}
+            config[info["status_key"]] = info["status_value"]
+            config["status"] = "operational"
+            config["playwright_state"] = str(state_file)
+            config["last_login"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+            info["config"].write_text(json.dumps(config, indent=2))
+            print(f"  ✅ Config updated")
+        else:
+            print(f"  ❌ Doesn't look like login was successful (URL: {current_url})")
+            print(f"     Try again with the correct credentials.")
 
-    if config_file.exists():
-        config = json.loads(config_file.read_text())
-    else:
-        config = {}
-
-    config["api_url"] = api_url if api_url else None
-    config["api_token"] = api_token if api_token else None
-    config["phone_number_id"] = phone_id if phone_id else None
-    config["status"] = "configured" if api_url and api_token else "needs_setup"
-
-    config_file.write_text(json.dumps(config, indent=2))
-
-    if api_url and api_token:
-        print("\n✓ WhatsApp configured!")
-    else:
-        print("\n✗ API URL and Token required")
-
-
-def setup_gmail():
-    print("\n" + "=" * 50)
-    print("GMAIL SETUP")
-    print("=" * 50)
-    print("""
-To get Gmail API access:
-1. Go to https://console.cloud.google.com/
-2. Create a project
-3. Enable Gmail API
-4. Create OAuth credentials (Desktop app)
-5. Download as 'credentials.json' to project root
-""")
-
-    creds_path = Path(__file__).parent / "credentials.json"
-
-    if creds_path.exists():
-        print("\n✓ credentials.json found!")
-        print("  Gmail is ready to use.")
-    else:
-        print("\n✗ credentials.json not found")
-        print("  Please download from Google Cloud Console")
-
-
-def show_status():
-    print("\n" + "=" * 50)
-    print("INTEGRATION STATUS")
-    print("=" * 50)
-
-    # Gmail
-    creds_path = Path(__file__).parent / "credentials.json"
-    gmail_status = "✓ Configured" if creds_path.exists() else "✗ Not found"
-    print(f"\nGmail: {gmail_status}")
-
-    # LinkedIn
-    li_config = VAULT_PATH / "LinkedIn" / "config.json"
-    if li_config.exists():
-        li = json.loads(li_config.read_text())
-        li_status = "✓ Configured" if li.get("access_token") else "✗ Not configured"
-    else:
-        li_status = "✗ Not setup"
-    print(f"LinkedIn: {li_status}")
-
-    # WhatsApp
-    wa_config = VAULT_PATH / "WhatsApp" / "config.json"
-    if wa_config.exists():
-        wa = json.loads(wa_config.read_text())
-        wa_status = "✓ Configured" if wa.get("api_url") else "✗ Not configured"
-    else:
-        wa_status = "✗ Not setup"
-    print(f"WhatsApp: {wa_status}")
+        page.close()
+        ctx.close()
+        return logged_in
 
 
 def main():
-    print("\nAI Employee Vault - Integration Setup")
-    print("=" * 50)
-    print("1. Setup LinkedIn")
-    print("2. Setup WhatsApp")
-    print("3. Setup Gmail")
-    print("4. Show Status")
-    print("5. Exit")
+    print("=" * 60)
+    print(" AI Employee - Social Integration Setup")
+    print("=" * 60)
+    print("\nThis will open browser windows for each platform.")
+    print("Log into each one when prompted.")
+    print()
 
-    choice = input("\nEnter choice (1-5): ").strip()
+    for platform, info in INTEGRATIONS.items():
+        if check_state(platform, info):
+            print(f"  ✅ {platform} already configured - skipping")
+            continue
+        setup_platform(platform, info)
 
-    if choice == "1":
-        setup_linkedin()
-    elif choice == "2":
-        setup_whatsapp()
-    elif choice == "3":
-        setup_gmail()
-    elif choice == "4":
-        show_status()
-    elif choice == "5":
-        print("\nExiting...")
-    else:
-        print("\nInvalid choice")
+    print(f"\n{'='*60}")
+    print(" Setup Complete")
+    print(f"{'='*60}")
+    print("\nCurrent integration status:")
+    for platform, info in INTEGRATIONS.items():
+        state = check_state(platform, info)
+        print(f"  {'✅' if state else '❌'} {platform}")
+
+    print("\nRun: bash start_all.sh  to restart all services")
+    print("Or:  opencode \"Post to LinkedIn about our new product\"")
 
 
 if __name__ == "__main__":
